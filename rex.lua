@@ -6,7 +6,7 @@ local loadstring, game, getgenv, setclipboard = loadstring, game, getgenv, setcl
 
 if getgenv().Aimbot then return end
 
---// Load Aimbot V2 (Raw)
+
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/kukuruzas53/rex.wtf/refs/heads/main/Resources/main.lua"))()
 
