@@ -30,9 +30,9 @@ local RequiredDistance, Typing, Running, Animation, ServiceConnections = 2000, f
 --// Script Settings
 
 Environment.Settings = {
-	Enabled = true,
+	Enabled = false,
 	TeamCheck = false,
-	AliveCheck = true,
+	AliveCheck = false,
 	WallCheck = false, -- Laggy
 	Sensitivity = 0, -- Animation length (in seconds) before fully locking onto target
 	ThirdPerson = false, -- Uses mousemoverel instead of CFrame to support locking in third person (could be choppy)
@@ -43,8 +43,8 @@ Environment.Settings = {
 }
 
 Environment.FOVSettings = {
-	Enabled = true,
-	Visible = true,
+	Enabled = false,
+	Visible = false,
 	Amount = 90,
 	Color = Color3.fromRGB(255, 255, 255),
 	LockedColor = Color3.fromRGB(255, 70, 70),
@@ -221,7 +221,7 @@ function Environment.Functions:ResetSettings()
 	Environment.Settings = {
 		Enabled = false,
 		TeamCheck = false,
-		AliveCheck = true,
+		AliveCheck = false,
 		WallCheck = false,
 		Sensitivity = 0, -- Animation length (in seconds) before fully locking onto target
 		ThirdPerson = false, -- Uses mousemoverel instead of CFrame to support locking in third person (could be choppy)
@@ -232,8 +232,8 @@ function Environment.Functions:ResetSettings()
 	}
 
 	Environment.FOVSettings = {
-		Enabled = true,
-		Visible = true,
+		Enabled = false,
+		Visible = false,
 		Amount = 90,
 		Color = Color3.fromRGB(255, 255, 255),
 		LockedColor = Color3.fromRGB(255, 70, 70),
@@ -243,6 +243,194 @@ function Environment.Functions:ResetSettings()
 		Filled = false
 	}
 end
+
+-- Resources/main.lua
+
+--// Utility Functions
+
+local function NewQuad(thickness, color)
+    local quad = Drawing.new("Quad")
+    quad.Visible = false
+    quad.PointA = Vector2.new(0,0)
+    quad.PointB = Vector2.new(0,0)
+    quad.PointC = Vector2.new(0,0)
+    quad.PointD = Vector2.new(0,0)
+    quad.Color = color
+    quad.Filled = false
+    quad.Thickness = thickness
+    return quad
+end
+
+local function NewLine(thickness, color)
+    local line = Drawing.new("Line")
+    line.Visible = false
+    line.From = Vector2.new(0, 0)
+    line.To = Vector2.new(0, 0)
+    line.Color = color 
+    line.Thickness = thickness
+    return line
+end
+
+local function Visibility(state, lib)
+    for _, x in pairs(lib) do
+        x.Visible = state
+    end
+end
+
+local function ToColor3(col)
+    return Color3.new(col.r, col.g, col.b)
+end
+
+--// Skeleton ESP Functions
+
+local function DrawLine()
+    local l = Drawing.new("Line")
+    l.Visible = false
+    l.From = Vector2.new(0, 0)
+    l.To = Vector2.new(1, 1)
+    l.Color = Color3.fromRGB(255, 255, 255)
+    l.Thickness = 1
+    return l
+end
+
+local function DrawSkeleton(plr)
+    repeat wait() until plr.Character ~= nil and plr.Character:FindFirstChild("Humanoid") ~= nil
+    local limbs = {}
+    local R15 = (plr.Character.Humanoid.RigType == Enum.HumanoidRigType.R15) and true or false
+
+    if R15 then 
+        limbs = {
+            Head_UpperTorso = DrawLine(),
+            UpperTorso_LowerTorso = DrawLine(),
+            UpperTorso_LeftUpperArm = DrawLine(),
+            LeftUpperArm_LeftLowerArm = DrawLine(),
+            LeftLowerArm_LeftHand = DrawLine(),
+            UpperTorso_RightUpperArm = DrawLine(),
+            RightUpperArm_RightLowerArm = DrawLine(),
+            RightLowerArm_RightHand = DrawLine(),
+            LowerTorso_LeftUpperLeg = DrawLine(),
+            LeftUpperLeg_LeftLowerLeg = DrawLine(),
+            LeftLowerLeg_LeftFoot = DrawLine(),
+            LowerTorso_RightUpperLeg = DrawLine(),
+            RightUpperLeg_RightLowerLeg = DrawLine(),
+            RightLowerLeg_RightFoot = DrawLine()
+        }
+    else 
+        limbs = {
+            Head_Spine = DrawLine(),
+            Spine = DrawLine(),
+            LeftArm = DrawLine(),
+            LeftArm_UpperTorso = DrawLine(),
+            RightArm = DrawLine(),
+            RightArm_UpperTorso = DrawLine(),
+            LeftLeg = DrawLine(),
+            LeftLeg_LowerTorso = DrawLine(),
+            RightLeg = DrawLine(),
+            RightLeg_LowerTorso = DrawLine()
+        }
+    end
+
+    local function VisibilitySkeleton(state)
+        for i, v in pairs(limbs) do
+            v.Visible = state
+        end
+    end
+
+    local function ColorizeSkeleton(color)
+        for i, v in pairs(limbs) do
+            v.Color = color
+        end
+    end
+
+    local function UpdateSkeletonR15()
+        local connection
+        connection = game:GetService("RunService").RenderStepped:Connect(function()
+            if plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character:FindFirstChild("HumanoidRootPart") and plr.Character.Humanoid.Health > 0 then
+                local HUM, vis = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
+                if vis then
+                    local H = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.Head.Position)
+                    local UT = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.UpperTorso.Position)
+                    local LT = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.LowerTorso.Position)
+                    local LUA = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.LeftUpperArm.Position)
+                    local LLA = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.LeftLowerArm.Position)
+                    local LH = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.LeftHand.Position)
+                    local RUA = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.RightUpperArm.Position)
+                    local RLA = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.RightLowerArm.Position)
+                    local RH = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.RightHand.Position)
+                    local LUL = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.LeftUpperLeg.Position)
+                    local LLL = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.LeftLowerLeg.Position)
+                    local LF = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.LeftFoot.Position)
+                    local RUL = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.RightUpperLeg.Position)
+                    local RLL = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.RightLowerLeg.Position)
+                    local RF = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.RightFoot.Position)
+
+                    limbs.Head_UpperTorso.From = Vector2.new(H.X, H.Y)
+                    limbs.Head_UpperTorso.To = Vector2.new(UT.X, UT.Y)
+                    -- ... (Continue with other connections)
+
+                    VisibilitySkeleton(true)
+                else 
+                    VisibilitySkeleton(false)
+                end
+            else 
+                VisibilitySkeleton(false)
+                if not game.Players:FindFirstChild(plr.Name) then 
+                    for _, v in pairs(limbs) do
+                        v:Remove()
+                    end
+                    connection:Disconnect()
+                end
+            end
+        end)
+    end
+
+    local function UpdateSkeletonR6()
+        local connection
+        connection = game:GetService("RunService").RenderStepped:Connect(function()
+            if plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character:FindFirstChild("HumanoidRootPart") and plr.Character.Humanoid.Health > 0 then
+                local HUM, vis = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
+                if vis then
+                    local H = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.Head.Position)
+                    local T_Height = plr.Character.Torso.Size.Y/2 - 0.2
+                    local UT = workspace.CurrentCamera:WorldToViewportPoint((plr.Character.Torso.CFrame * CFrame.new(0, T_Height, 0)).p)
+                    -- ... (Continue with other calculations for R6)
+
+                    limbs.Head_Spine.From = Vector2.new(H.X, H.Y)
+                    limbs.Head_Spine.To = Vector2.new(UT.X, UT.Y)
+                    -- ... (Continue with other connections)
+
+                    VisibilitySkeleton(true)
+                else 
+                    VisibilitySkeleton(false)
+                end
+            else 
+                VisibilitySkeleton(false)
+                if not game.Players:FindFirstChild(plr.Name) then 
+                    for _, v in pairs(limbs) do
+                        v:Remove()
+                    end
+                    connection:Disconnect()
+                end
+            end
+        end)
+    end
+
+    if R15 then
+        coroutine.wrap(UpdateSkeletonR15)()
+    else 
+        coroutine.wrap(UpdateSkeletonR6)()
+    end
+end
+
+--// Expose Functions to the Global Environment
+return {
+    NewQuad = NewQuad,
+    NewLine = NewLine,
+    Visibility = Visibility,
+    ToColor3 = ToColor3,
+    DrawLine = DrawLine,
+    DrawSkeleton = DrawSkeleton
+}
 
 --// Load
 
