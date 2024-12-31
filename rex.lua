@@ -1,43 +1,194 @@
+-- Preview: https://cdn.discordapp.com/attachments/796378086446333984/818089455897542687/unknown.png
+-- Made by Blissful#4992, modified for integration with rex.wtf
 local loadstring, game, getgenv, setclipboard = loadstring, game, getgenv, setclipboard
 
---// Loaded check
+-- Loaded check
 if getgenv().Aimbot then return end
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/kukuruzas53/rex.wtf/refs/heads/main/Resources/main.lua"))()
 
---// Variables
+-- Variables
 local Aimbot = getgenv().Aimbot
-local Settings, FOVSettings, Functions = Aimbot.Settings, Aimbot.FOVSettings, Aimbot.Functions
+local Settings, FOVSettings, Functions, ESPSettings = Aimbot.Settings, Aimbot.FOVSettings, Aimbot.Functions, Aimbot.ESPSettings or {}
+
 local Library = loadstring(game:GetObjects("rbxassetid://7657867786")[1].Source)() -- Pepsi's UI Library
 
-local Parts = {"Head", "HumanoidRootPart", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg", "LeftHand", "RightHand", "LeftLowerArm", "RightLowerArm", "LeftUpperArm", "RightUpperArm", "LeftFoot", "LeftLowerLeg", "UpperTorso", "LeftUpperLeg", "RightFoot", "RightLowerLeg", "LowerTorso", "RightUpperLeg"}
+-- Frame setup
+Library.UnloadCallback = Functions.Exit
+
+local MainFrame = Library:CreateWindow({
+    Name = "rex.wtf",
+    Themeable = {
+        Info = "Made by nerf",
+        Credit = false
+    },
+    Background = "",
+    [[{"__Designer.Colors.section":"D0FFD0","__Designer.Colors.topGradient":"051005","__Designer.Settings.ShowHideKey":"Enum.KeyCode.RightShift","__Designer.Colors.otherElementText":"9AB09A","__Designer.Colors.hoveredOptionBottom":"4FA54F","__Designer.Background.ImageAssetID":"109694448653518","__Designer.Colors.unhoveredOptionTop":"5BC95B","__Designer.Colors.innerBorder":"3A6E3A","__Designer.Colors.unselectedOption":"62AD62","__Designer.Background.UseBackgroundImage":false,"__Designer.Files.WorkspaceFile":"Aimbot V2","__Designer.Colors.main":"FFFFFF","__Designer.Colors.outerBorder":"1A3A1A","__Designer.Background.ImageColor":"FFFFFF","__Designer.Colors.tabText":"E0FFE0","__Designer.Colors.elementBorder":"173017","__Designer.Colors.sectionBackground":"091509","__Designer.Colors.selectedOption":"7DE87D","__Designer.Colors.background":"051005","__Designer.Colors.bottomGradient":"102410","__Designer.Background.ImageTransparency":95,"__Designer.Colors.hoveredOptionTop":"65D065","__Designer.Colors.elementText":"B6ECB6","__Designer.Colors.unhoveredOptionBottom":"75E675"}]]
+})
+
+-- Tabs
+local MainTab = MainFrame:CreateTab({
+    Name = "Main"
+})
+
+local ESPTab = MainFrame:CreateTab({
+    Name = "ESP"
+})
+
+local FunctionsTab = MainFrame:CreateTab({
+    Name = "Misc"
+})
+
+-- Main Tab Sections
+local AimbotValues = MainTab:CreateSection({
+    Name = "Aimbot Values"
+})
+
+local AimbotChecks = MainTab:CreateSection({
+    Name = "Aimbot Checks"
+})
+
+-- FOV Settings are placed on the side of the Main Tab
+local FOVSideSection = MainTab:CreateSection({
+    Name = "FOV Settings",
+    Side = "Right"
+})
+
+-- ESP Tab Sections
+local ESPControls = ESPTab:CreateSection({
+    Name = "ESP Controls"
+})
+
+local ESPVisuals = ESPTab:CreateSection({
+    Name = "ESP Appearance"
+})
+
+local ESPSettingsSection = ESPTab:CreateSection({
+    Name = "ESP Settings"
+})
 
 -- ESP Settings
-local ESPSettings = {
+ESPSettings = {
+    Enabled = false,
+    BoxESP = true,
+    Tracers = true,
+    Healthbar = true,
+    WallCheck = true,
+    TeamCheck = true,
+    UseTeamColors = false,
     Box_Color = Color3.fromRGB(255, 0, 0),
-    Box_Transparency = 1,
     Tracer_Color = Color3.fromRGB(255, 0, 0),
-    Tracer_Transparency = 1,
+    Healthbar_Color = Color3.fromRGB(0, 255, 0),
     Tracer_Thickness = 1,
     Box_Thickness = 1,
-    Tracer_Origin = "Bottom",
-    Tracer_FollowMouse = false,
-    Tracers = false,
-    BoxESP = false
+    Tracer_Origin = "Bottom", -- Middle, Bottom, Left, Right, Top, Following Mouse
+    Tracer_FollowMouse = false
 }
-local Team_Check = {
-    TeamCheck = false,
-    Green = Color3.fromRGB(0, 255, 0),
-    Red = Color3.fromRGB(255, 0, 0)
-}
-local TeamColor = true
 
---// Functions for ESP
+-- UI Elements for ESP
+ESPControls:AddToggle({
+    Name = "Enable ESP",
+    Value = ESPSettings.Enabled,
+    Callback = function(New, Old)
+        ESPSettings.Enabled = New
+    end
+}).Default = ESPSettings.Enabled
+
+ESPControls:AddToggle({
+    Name = "Box ESP",
+    Value = ESPSettings.BoxESP,
+    Callback = function(New, Old)
+        ESPSettings.BoxESP = New
+    end
+}).Default = ESPSettings.BoxESP
+
+ESPControls:AddToggle({
+    Name = "Tracers",
+    Value = ESPSettings.Tracers,
+    Callback = function(New, Old)
+        ESPSettings.Tracers = New
+    end
+}).Default = ESPSettings.Tracers
+
+ESPControls:AddToggle({
+    Name = "Healthbar",
+    Value = ESPSettings.Healthbar,
+    Callback = function(New, Old)
+        ESPSettings.Healthbar = New
+    end
+}).Default = ESPSettings.Healthbar
+
+-- ESP Settings
+ESPSettingsSection:AddToggle({
+    Name = "Wall Check",
+    Value = ESPSettings.WallCheck,
+    Callback = function(New, Old)
+        ESPSettings.WallCheck = New
+    end
+}).Default = ESPSettings.WallCheck
+
+ESPSettingsSection:AddToggle({
+    Name = "Team Check",
+    Value = ESPSettings.TeamCheck,
+    Callback = function(New, Old)
+        ESPSettings.TeamCheck = New
+    end
+}).Default = ESPSettings.TeamCheck
+
+ESPSettingsSection:AddToggle({
+    Name = "Use Team Colors",
+    Value = ESPSettings.UseTeamColors,
+    Callback = function(New, Old)
+        ESPSettings.UseTeamColors = New
+    end
+}).Default = ESPSettings.UseTeamColors
+
+ESPSettingsSection:AddDropdown({
+    Name = "Tracer Origin",
+    Value = ESPSettings.Tracer_Origin,
+    Callback = function(New, Old)
+        ESPSettings.Tracer_Origin = New
+        if New == "Following Mouse" then
+            ESPSettings.Tracer_FollowMouse = true
+        else
+            ESPSettings.Tracer_FollowMouse = false
+        end
+    end,
+    List = {"Middle", "Bottom", "Left", "Right", "Top", "Following Mouse"},
+    Nothing = "Bottom"
+}).Default = ESPSettings.Tracer_Origin
+
+-- ESP Visuals
+ESPVisuals:AddColorpicker({
+    Name = "Box Color",
+    Value = ESPSettings.Box_Color,
+    Callback = function(New, Old)
+        ESPSettings.Box_Color = New
+    end
+}).Default = ESPSettings.Box_Color
+
+ESPVisuals:AddColorpicker({
+    Name = "Tracer Color",
+    Value = ESPSettings.Tracer_Color,
+    Callback = function(New, Old)
+        ESPSettings.Tracer_Color = New
+    end
+}).Default = ESPSettings.Tracer_Color
+
+ESPVisuals:AddColorpicker({
+    Name = "Healthbar Base Color",
+    Value = ESPSettings.Healthbar_Color,
+    Callback = function(New, Old)
+        ESPSettings.Healthbar_Color = New
+    end
+}).Default = ESPSettings.Healthbar_Color
+
+-- Helper functions for drawing
 local player = game:GetService("Players").LocalPlayer
 local camera = game:GetService("Workspace").CurrentCamera
 local mouse = player:GetMouse()
 
-local function NewQuad(thickness, color, transparency)
+local function NewQuad(thickness, color)
     local quad = Drawing.new("Quad")
     quad.Visible = false
     quad.PointA = Vector2.new(0,0)
@@ -47,18 +198,18 @@ local function NewQuad(thickness, color, transparency)
     quad.Color = color
     quad.Filled = false
     quad.Thickness = thickness
-    quad.Transparency = transparency
+    quad.Transparency = 1
     return quad
 end
 
-local function NewLine(thickness, color, transparency)
+local function NewLine(thickness, color)
     local line = Drawing.new("Line")
     line.Visible = false
     line.From = Vector2.new(0, 0)
     line.To = Vector2.new(0, 0)
     line.Color = color 
     line.Thickness = thickness
-    line.Transparency = transparency
+    line.Transparency = 1
     return line
 end
 
@@ -74,19 +225,20 @@ end
 
 local black = Color3.fromRGB(0, 0, 0)
 
+-- ESP Function
 local function ESP(plr)
     local library = {
-        blacktracer = NewLine(ESPSettings.Tracer_Thickness*2, black, ESPSettings.Tracer_Transparency),
-        tracer = NewLine(ESPSettings.Tracer_Thickness, ESPSettings.Tracer_Color, ESPSettings.Tracer_Transparency),
-        black = NewQuad(ESPSettings.Box_Thickness*2, black, ESPSettings.Box_Transparency),
-        box = NewQuad(ESPSettings.Box_Thickness, ESPSettings.Box_Color, ESPSettings.Box_Transparency),
-        healthbar = NewLine(3, black, ESPSettings.Box_Transparency),
-        greenhealth = NewLine(1.5, black, ESPSettings.Box_Transparency)
+        blacktracer = NewLine(ESPSettings.Tracer_Thickness*2, black),
+        tracer = NewLine(ESPSettings.Tracer_Thickness, ESPSettings.Tracer_Color),
+        black = NewQuad(ESPSettings.Box_Thickness*2, black),
+        box = NewQuad(ESPSettings.Box_Thickness, ESPSettings.Box_Color),
+        healthbar = NewLine(3, black),
+        greenhealth = NewLine(1.5, ESPSettings.Healthbar_Color)
     }
 
     local function Colorize(color)
-        for u, x in pairs(library) do
-            if u ~= "healthbar" and u ~= "greenhealth" and u ~= "blacktracer" and u ~= "black" then
+        for _, x in pairs(library) do
+            if x ~= library.healthbar and x ~= library.greenhealth and x ~= library.blacktracer and x ~= library.black then
                 x.Color = color
             end
         end
@@ -95,9 +247,11 @@ local function ESP(plr)
     local function Updater()
         local connection
         connection = game:GetService("RunService").RenderStepped:Connect(function()
-            if plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character:FindFirstChild("HumanoidRootPart") and plr.Character.Humanoid.Health > 0 and plr.Character:FindFirstChild("Head") then
+            if ESPSettings.Enabled and plr.Character ~= nil and plr.Character:FindFirstChild("Humanoid") ~= nil and plr.Character:FindFirstChild("HumanoidRootPart") ~= nil then
                 local HumPos, OnScreen = camera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
-                if OnScreen then
+                local HeadPos, HeadVisible = camera:WorldToViewportPoint(plr.Character.Head.Position)
+
+                if OnScreen and (not ESPSettings.WallCheck or HeadVisible) then
                     local head = camera:WorldToViewportPoint(plr.Character.Head.Position)
                     local DistanceY = math.clamp((Vector2.new(head.X, head.Y) - Vector2.new(HumPos.X, HumPos.Y)).magnitude, 2, math.huge)
                     
@@ -107,32 +261,29 @@ local function ESP(plr)
                         item.PointC = Vector2.new(HumPos.X - DistanceY, HumPos.Y + DistanceY*2)
                         item.PointD = Vector2.new(HumPos.X + DistanceY, HumPos.Y + DistanceY*2)
                     end
-                    if ESPSettings.BoxESP then
-                        Size(library.box)
-                        Size(library.black)
-                    end
+                    Size(library.box)
+                    Size(library.black)
 
-                    -- Tracer 
                     if ESPSettings.Tracers then
-                        local fromVector
-                        if ESPSettings.Tracer_Origin == "Middle" then
-                            fromVector = camera.ViewportSize*0.5
+                        if ESPSettings.Tracer_Origin == "Following Mouse" or ESPSettings.Tracer_FollowMouse then
+                            library.tracer.From = Vector2.new(mouse.X, mouse.Y)
+                            library.blacktracer.From = Vector2.new(mouse.X, mouse.Y)
+                        elseif ESPSettings.Tracer_Origin == "Middle" then
+                            library.tracer.From = camera.ViewportSize*0.5
+                            library.blacktracer.From = camera.ViewportSize*0.5
                         elseif ESPSettings.Tracer_Origin == "Bottom" then
-                            fromVector = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
-                        elseif ESPSettings.Tracer_Origin == "Top" then
-                            fromVector = Vector2.new(camera.ViewportSize.X*0.5, 0)
+                            library.tracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y) 
+                            library.blacktracer.From = Vector2.new(camera.ViewportSize.X*0.5, camera.ViewportSize.Y)
                         elseif ESPSettings.Tracer_Origin == "Left" then
-                            fromVector = Vector2.new(0, camera.ViewportSize.Y*0.5)
+                            library.tracer.From = Vector2.new(0, camera.ViewportSize.Y*0.5)
+                            library.blacktracer.From = Vector2.new(0, camera.ViewportSize.Y*0.5)
                         elseif ESPSettings.Tracer_Origin == "Right" then
-                            fromVector = Vector2.new(camera.ViewportSize.X, camera.ViewportSize.Y*0.5)
+                            library.tracer.From = Vector2.new(camera.ViewportSize.X, camera.ViewportSize.Y*0.5)
+                            library.blacktracer.From = Vector2.new(camera.ViewportSize.X, camera.ViewportSize.Y*0.5)
+                        elseif ESPSettings.Tracer_Origin == "Top" then
+                            library.tracer.From = Vector2.new(camera.ViewportSize.X*0.5, 0)
+                            library.blacktracer.From = Vector2.new(camera.ViewportSize.X*0.5, 0)
                         end
-
-                        if ESPSettings.Tracer_FollowMouse then
-                            fromVector = Vector2.new(mouse.X, mouse.Y+36)
-                        end
-
-                        library.tracer.From = fromVector
-                        library.blacktracer.From = fromVector
                         library.tracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
                         library.blacktracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
                     else 
@@ -143,35 +294,47 @@ local function ESP(plr)
                     end
 
                     -- Health Bar
-                    local d = (Vector2.new(HumPos.X - DistanceY, HumPos.Y - DistanceY*2) - Vector2.new(HumPos.X - DistanceY, HumPos.Y + DistanceY*2)).magnitude 
-                    local healthoffset = plr.Character.Humanoid.Health/plr.Character.Humanoid.MaxHealth * d
+                    if ESPSettings.Healthbar then
+                        local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
+                        if humanoid then
+                            local healthPercentage = humanoid.Health / humanoid.MaxHealth
+                            local d = (Vector2.new(HumPos.X - DistanceY, HumPos.Y - DistanceY*2) - Vector2.new(HumPos.X - DistanceY, HumPos.Y + DistanceY*2)).magnitude 
+                            local healthHeight = d * healthPercentage
 
-                    library.greenhealth.From = Vector2.new(HumPos.X - DistanceY - 4, HumPos.Y + DistanceY*2)
-                    library.greenhealth.To = Vector2.new(HumPos.X - DistanceY - 4, HumPos.Y + DistanceY*2 - healthoffset)
+                            library.healthbar.From = Vector2.new(HumPos.X - DistanceY - 6, HumPos.Y - DistanceY*2)
+                            library.healthbar.To = Vector2.new(HumPos.X - DistanceY - 6, HumPos.Y + DistanceY*2)
 
-                    library.healthbar.From = Vector2.new(HumPos.X - DistanceY - 4, HumPos.Y + DistanceY*2)
-                    library.healthbar.To = Vector2.new(HumPos.X - DistanceY - 4, HumPos.Y - DistanceY*2)
+                            library.greenhealth.From = Vector2.new(HumPos.X - DistanceY - 6, HumPos.Y + DistanceY*2 - healthHeight)
+                            library.greenhealth.To = Vector2.new(HumPos.X - DistanceY - 6, HumPos.Y + DistanceY*2)
 
-                    local green = Color3.fromRGB(0, 255, 0)
-                    local red = Color3.fromRGB(255, 0, 0)
-
-                    library.greenhealth.Color = red:lerp(green, plr.Character.Humanoid.Health/plr.Character.Humanoid.MaxHealth);
-
-                    if Team_Check.TeamCheck then
-                        if plr.TeamColor == player.TeamColor then
-                            Colorize(Team_Check.Green)
-                        else 
-                            Colorize(Team_Check.Red)
+                            -- Gradient color based on health
+                            local green = Color3.fromRGB(0, 255, 0)
+                            local red = Color3.fromRGB(255, 0, 0)
+                            library.greenhealth.Color = red:lerp(green, healthPercentage)
+                        else
+                            library.greenhealth.From = Vector2.new(0, 0)
+                            library.greenhealth.To = Vector2.new(0, 0)
+                            library.healthbar.From = Vector2.new(0, 0)
+                            library.healthbar.To = Vector2.new(0, 0)
                         end
-                    else 
-                        library.tracer.Color = ESPSettings.Tracer_Color
-                        library.box.Color = ESPSettings.Box_Color
+                    else
+                        library.greenhealth.From = Vector2.new(0, 0)
+                        library.greenhealth.To = Vector2.new(0, 0)
+                        library.healthbar.From = Vector2.new(0, 0)
+                        library.healthbar.To = Vector2.new(0, 0)
                     end
-                    if TeamColor then
-                        Colorize(plr.TeamColor.Color)
+
+                    if ESPSettings.TeamCheck and plr.Team == player.Team then
+                        Visibility(false, library)
+                    else
+                        if ESPSettings.UseTeamColors then
+                            Colorize(plr.TeamColor.Color)
+                        else
+                            library.tracer.Color = ESPSettings.Tracer_Color
+                            library.box.Color = ESPSettings.Box_Color
+                        end
+                        Visibility(true, library)
                     end
-                    Visibility(ESPSettings.Tracers, {library.tracer, library.blacktracer})
-                    Visibility(ESPSettings.BoxESP, {library.box, library.black, library.healthbar, library.greenhealth})
                 else 
                     Visibility(false, library)
                 end
@@ -186,179 +349,255 @@ local function ESP(plr)
     coroutine.wrap(Updater)()
 end
 
--- Initialize ESP for existing players
+-- Initialize ESP for current players
 for _, v in pairs(game:GetService("Players"):GetPlayers()) do
-    if v.Name ~= player.Name then
-        coroutine.wrap(ESP)(v)
+    if v.Name ~= player.Name then 
+        ESP(v)
     end
 end
 
--- Connect ESP for new players
-game.Players.PlayerAdded:Connect(function(newplr)
-    if newplr.Name ~= player.Name then
-        coroutine.wrap(ESP)(newplr)
+-- Connect function for new players
+game:GetService("Players").PlayerAdded:Connect(function(v)
+    if v.Name ~= player.Name then 
+        ESP(v)
     end
 end)
 
---// Frame
-Library.UnloadCallback = Functions.Exit
+-- Aimbot Functionality
+local AimbotConnection
+Settings.LockPart = "Head"  -- Default lock part
 
-local MainFrame = Library:CreateWindow({
-    Name = "rex.wtf",
-    Themeable = {
-        Image = "7059346386",
-        Info = "Made by Exunys\nPowered by Pepsi's UI Library",
-        Credit = false
-    },
-    Background = "",
-    Theme = [[{"__Designer.Colors.section":"D0FFD0","__Designer.Colors.topGradient":"051005","__Designer.Settings.ShowHideKey":"Enum.KeyCode.RightShift","__Designer.Colors.otherElementText":"9AB09A","__Designer.Colors.hoveredOptionBottom":"4FA54F","__Designer.Background.ImageAssetID":"109694448653518","__Designer.Colors.unhoveredOptionTop":"5BC95B","__Designer.Colors.innerBorder":"3A6E3A","__Designer.Colors.unselectedOption":"62AD62","__Designer.Background.UseBackgroundImage":false,"__Designer.Files.WorkspaceFile":"Aimbot V2","__Designer.Colors.main":"FFFFFF","__Designer.Colors.outerBorder":"1A3A1A","__Designer.Background.ImageColor":"FFFFFF","__Designer.Colors.tabText":"E0FFE0","__Designer.Colors.elementBorder":"173017","__Designer.Colors.sectionBackground":"091509","__Designer.Colors.selectedOption":"7DE87D","__Designer.Colors.background":"051005","__Designer.Colors.bottomGradient":"102410","__Designer.Background.ImageTransparency":95,"__Designer.Colors.hoveredOptionTop":"65D065","__Designer.Colors.elementText":"B6ECB6","__Designer.Colors.unhoveredOptionBottom":"75E675"}]]
-})
-
---// Tabs
-local SettingsTab = MainFrame:CreateTab({
-    Name = "Aimbot"
-})
-
-local FOVSettingsTab = MainFrame:CreateTab({
-    Name = "FOV Settings"
-})
-
-local ESPTab = MainFrame:CreateTab({
-    Name = "ESP"
-})
-
-local FunctionsTab = MainFrame:CreateTab({
-    Name = "Misc"
-})
-
---// ESP - Sections
-local ESP_Values = ESPTab:CreateSection({
-    Name = "Values"
-})
-
-local ESP_Appearance = ESPTab:CreateSection({
-    Name = "Appearance"
-})
-
---// ESP Settings
-
--- Enable ESP
-ESP_Values:AddToggle({
-    Name = "Enable ESP",
-    Value = false,
+-- Aimbot UI Elements
+AimbotValues:AddToggle({
+    Name = "Enabled",
+    Value = Settings.Enabled,
     Callback = function(New, Old)
-        ESPSettings.Tracers = New
-        ESPSettings.BoxESP = New
-        for _, v in pairs(game:GetService("Players"):GetPlayers()) do
-            if v ~= player then
-                ESP(v)
-            end
+        Settings.Enabled = New
+        if New then
+            StartAimbot()
+        else
+            StopAimbot()
         end
     end
-})
+}).Default = Settings.Enabled
 
--- Box ESP
-ESP_Values:AddToggle({
-    Name = "Box ESP",
-    Value = false,
+AimbotValues:AddToggle({
+    Name = "Toggle",
+    Value = Settings.Toggle,
     Callback = function(New, Old)
-        ESPSettings.BoxESP = New
+        Settings.Toggle = New
     end
-})
+}).Default = Settings.Toggle
 
--- Tracer
-ESP_Values:AddToggle({
-    Name = "Tracer",
-    Value = false,
+AimbotValues:AddDropdown({
+    Name = "Lock Part",
+    Value = Settings.LockPart,
     Callback = function(New, Old)
-        ESPSettings.Tracers = New
-    end
-})
+        Settings.LockPart = New
+    end,
+    List = {"Head", "HumanoidRootPart"},
+    Nothing = "Head"
+}).Default = Settings.LockPart
 
--- Team Check
-ESP_Values:AddToggle({
+AimbotValues:AddTextbox({
+    Name = "Hotkey",
+    Value = Settings.TriggerKey,
+    Callback = function(New, Old)
+        Settings.TriggerKey = New
+    end
+}).Default = Settings.TriggerKey
+
+AimbotValues:AddSlider({
+    Name = "Sensitivity",
+    Value = Settings.Sensitivity,
+    Callback = function(New, Old)
+        Settings.Sensitivity = New
+    end,
+    Min = 0,
+    Max = 1,
+    Decimals = 2
+}).Default = Settings.Sensitivity
+
+AimbotChecks:AddToggle({
     Name = "Team Check",
-    Value = false,
+    Value = Settings.TeamCheck,
     Callback = function(New, Old)
-        Team_Check.TeamCheck = New
+        Settings.TeamCheck = New
     end
-})
+}).Default = Settings.TeamCheck
 
--- Tracer Origin
-ESP_Values:AddDropdown({
-    Name = "Tracer Origin",
-    Value = "Bottom",
+AimbotChecks:AddToggle({
+    Name = "Wall Check",
+    Value = Settings.WallCheck,
     Callback = function(New, Old)
-        ESPSettings.Tracer_Origin = New
-    end,
-    List = {"Top", "Bottom", "Left", "Right", "Middle"},
-    Nothing = "Bottom"
-})
-
--- Follow Mouse
-ESP_Values:AddToggle({
-    Name = "Follow Mouse",
-    Value = false,
-    Callback = function(New, Old)
-        ESPSettings.Tracer_FollowMouse = New
+        Settings.WallCheck = New
     end
-})
+}).Default = Settings.WallCheck
 
---// ESP Appearance
-
--- Box Color
-ESP_Appearance:AddColorpicker({
-    Name = "Box Color",
-    Value = ESPSettings.Box_Color,
+AimbotChecks:AddToggle({
+    Name = "Alive Check",
+    Value = Settings.AliveCheck,
     Callback = function(New, Old)
-        ESPSettings.Box_Color = New
+        Settings.AliveCheck = New
     end
-})
+}).Default = Settings.AliveCheck
 
--- Tracer Color
-ESP_Appearance:AddColorpicker({
-    Name = "Tracer Color",
-    Value = ESPSettings.Tracer_Color,
-    Callback = function(New, Old)
-        ESPSettings.Tracer_Color = New
-    end
-})
+-- Aimbot Functions
+local function StartAimbot()
+    if AimbotConnection then return end
+    AimbotConnection = game:GetService("RunService").RenderStepped:Connect(function()
+        if Settings.Enabled then
+            local closestPlayer = nil
+            local closestDistance = math.huge
 
--- Box Transparency
-ESP_Appearance:AddSlider({
-    Name = "Box Transparency",
-    Value = ESPSettings.Box_Transparency,
-    Callback = function(New, Old)
-        ESPSettings.Box_Transparency = New
-        for _, v in pairs(Drawing.getInstances()) do
-            if v.Name == "box" then
-                v.Transparency = New
+            for _,v in pairs(game.Players:GetPlayers()) do
+                if v.Name ~= player.Name and v.Character and v.Character:FindFirstChild(Settings.LockPart) and v.Character:FindFirstChildOfClass("Humanoid") then
+                    local humanoid = v.Character:FindFirstChildOfClass("Humanoid")
+                    if humanoid.Health > 0 and (not Settings.AliveCheck or humanoid:GetState() ~= Enum.HumanoidStateType.Dead) then
+                        local screenPos, onScreen = camera:WorldToScreenPoint(v.Character[Settings.LockPart].Position)
+                        if onScreen then
+                            local distance = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mouse.X, mouse.Y)).magnitude
+                            if distance < closestDistance then
+                                if Settings.TeamCheck and v.Team ~= player.Team then
+                                    closestPlayer = v
+                                    closestDistance = distance
+                                elseif not Settings.TeamCheck then
+                                    closestPlayer = v
+                                    closestDistance = distance
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+
+            if closestPlayer then
+                local aimPart = closestPlayer.Character:FindFirstChild(Settings.LockPart)
+                local aimPosition = camera:WorldToScreenPoint(aimPart.Position)
+                local mousePosition = Vector2.new(mouse.X, mouse.Y)
+                local aimVector = (Vector2.new(aimPosition.X, aimPosition.Y) - mousePosition) * Settings.Sensitivity
+
+                if game.GuiService then
+                    game.GuiService:MoveMouse(aimVector.X, aimVector.Y)
+                else
+                    -- Fallback for games without GuiService
+                    local mousemoverel = loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/Aimbot-Script/main/mousemoverel.lua"))()
+                    mousemoverel(aimVector.X, aimVector.Y)
+                end
             end
         end
+    end)
+end
+
+local function StopAimbot()
+    if AimbotConnection then
+        AimbotConnection:Disconnect()
+        AimbotConnection = nil
+    end
+end
+
+-- Toggle Aimbot on Hotkey
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent and input.KeyCode == Enum.KeyCode[Settings.TriggerKey] then
+        if Settings.Toggle then
+            if Settings.Enabled then
+                StopAimbot()
+                Settings.Enabled = false
+            else
+                StartAimbot()
+                Settings.Enabled = true
+            end
+        else
+            StartAimbot()
+        end
+    elseif not gameProcessedEvent and input.KeyCode == Enum.KeyCode[Settings.TriggerKey] and not Settings.Toggle then
+        StopAimbot()
+    end
+end)
+
+-- FOV Settings Section
+FOVSideSection:AddToggle({
+    Name = "Enabled",
+    Value = FOVSettings.Enabled,
+    Callback = function(New, Old)
+        FOVSettings.Enabled = New
+    end
+}).Default = FOVSettings.Enabled
+
+FOVSideSection:AddToggle({
+    Name = "Visible",
+    Value = FOVSettings.Visible,
+    Callback = function(New, Old)
+        FOVSettings.Visible = New
+    end
+}).Default = FOVSettings.Visible
+
+FOVSideSection:AddSlider({
+    Name = "Amount",
+    Value = FOVSettings.Amount,
+    Callback = function(New, Old)
+        FOVSettings.Amount = New
+    end,
+    Min = 10,
+    Max = 300
+}).Default = FOVSettings.Amount
+
+FOVSideSection:AddToggle({
+    Name = "Filled",
+    Value = FOVSettings.Filled,
+    Callback = function(New, Old)
+        FOVSettings.Filled = New
+    end
+}).Default = FOVSettings.Filled
+
+FOVSideSection:AddSlider({
+    Name = "Transparency",
+    Value = FOVSettings.Transparency,
+    Callback = function(New, Old)
+        FOVSettings.Transparency = New
     end,
     Min = 0,
     Max = 1,
-    Decimal = 2
-})
+    Decimal = 1
+}).Default = FOVSettings.Transparency
 
--- Tracer Transparency
-ESP_Appearance:AddSlider({
-    Name = "Tracer Transparency",
-    Value = ESPSettings.Tracer_Transparency,
+FOVSideSection:AddSlider({
+    Name = "Sides",
+    Value = FOVSettings.Sides,
     Callback = function(New, Old)
-        ESPSettings.Tracer_Transparency = New
-        for _, v in pairs(Drawing.getInstances()) do
-            if v.Name == "tracer" then
-                v.Transparency = New
-            end
-        end
+        FOVSettings.Sides = New
     end,
-    Min = 0,
-    Max = 1,
-    Decimal = 2
-})
+    Min = 3,
+    Max = 60
+}).Default = FOVSettings.Sides
 
---// Functions
+FOVSideSection:AddSlider({
+    Name = "Thickness",
+    Value = FOVSettings.Thickness,
+    Callback = function(New, Old)
+        FOVSettings.Thickness = New
+    end,
+    Min = 1,
+    Max = 50
+}).Default = FOVSettings.Thickness
+
+FOVSideSection:AddColorpicker({
+    Name = "Color",
+    Value = FOVSettings.Color,
+    Callback = function(New, Old)
+        FOVSettings.Color = New
+    end
+}).Default = FOVSettings.Color
+
+FOVSideSection:AddColorpicker({
+    Name = "Locked Color",
+    Value = FOVSettings.LockedColor,
+    Callback = function(New, Old)
+        FOVSettings.LockedColor = New
+    end
+}).Default = FOVSettings.LockedColor
+
+-- Functions Tab - Functions
 local FunctionsSection = FunctionsTab:CreateSection({
     Name = "Functions"
 })
@@ -381,12 +620,5 @@ FunctionsSection:AddButton({
     Callback = function()
         Functions:Exit()
         Library.Unload()
-    end
-})
-
-FunctionsSection:AddButton({
-    Name = "Copy Script Page",
-    Callback = function()
-        setclipboard("https://github.com/Exunys/Aimbot-V2")
     end
 })
