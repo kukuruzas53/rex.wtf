@@ -23,15 +23,14 @@ local ESPSettings = {
     Tracer_Origin = "Bottom",
     Tracer_FollowMouse = false,
     Tracers = false,
-    BoxESP = false,
-    Enabled = false
+    BoxESP = false
 }
 local Team_Check = {
     TeamCheck = false,
-    UseTeamColor = false,
     Green = Color3.fromRGB(0, 255, 0),
     Red = Color3.fromRGB(255, 0, 0)
 }
+local TeamColor = true
 
 --// Functions for ESP
 local player = game:GetService("Players").LocalPlayer
@@ -86,8 +85,8 @@ local function ESP(plr)
     }
 
     local function Colorize(color)
-        for _, x in pairs(library) do
-            if x ~= library.healthbar and x ~= library.greenhealth and x ~= library.blacktracer and x ~= library.black then
+        for u, x in pairs(library) do
+            if u ~= "healthbar" and u ~= "greenhealth" and u ~= "blacktracer" and u ~= "black" then
                 x.Color = color
             end
         end
@@ -96,7 +95,7 @@ local function ESP(plr)
     local function Updater()
         local connection
         connection = game:GetService("RunService").RenderStepped:Connect(function()
-            if ESPSettings.Enabled and plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character:FindFirstChild("HumanoidRootPart") and plr.Character.Humanoid.Health > 0 and plr.Character:FindFirstChild("Head") then
+            if plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character:FindFirstChild("HumanoidRootPart") and plr.Character.Humanoid.Health > 0 and plr.Character:FindFirstChild("Head") then
                 local HumPos, OnScreen = camera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
                 if OnScreen then
                     local head = camera:WorldToViewportPoint(plr.Character.Head.Position)
@@ -108,22 +107,13 @@ local function ESP(plr)
                         item.PointC = Vector2.new(HumPos.X - DistanceY, HumPos.Y + DistanceY*2)
                         item.PointD = Vector2.new(HumPos.X + DistanceY, HumPos.Y + DistanceY*2)
                     end
-
-                    local shouldShow = true
-                    if Team_Check.TeamCheck then
-                        shouldShow = plr.TeamColor ~= player.TeamColor
-                    end
-
-                    if ESPSettings.BoxESP and shouldShow then
+                    if ESPSettings.BoxESP then
                         Size(library.box)
                         Size(library.black)
-                        Visibility(true, {library.box, library.black, library.healthbar, library.greenhealth})
-                    else
-                        Visibility(false, {library.box, library.black, library.healthbar, library.greenhealth})
                     end
 
                     -- Tracer 
-                    if ESPSettings.Tracers and shouldShow then
+                    if ESPSettings.Tracers then
                         local fromVector
                         if ESPSettings.Tracer_Origin == "Middle" then
                             fromVector = camera.ViewportSize*0.5
@@ -145,34 +135,43 @@ local function ESP(plr)
                         library.blacktracer.From = fromVector
                         library.tracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
                         library.blacktracer.To = Vector2.new(HumPos.X, HumPos.Y + DistanceY*2)
-                        Visibility(true, {library.tracer, library.blacktracer})
                     else 
-                        Visibility(false, {library.tracer, library.blacktracer})
+                        library.tracer.From = Vector2.new(0, 0)
+                        library.blacktracer.From = Vector2.new(0, 0)
+                        library.tracer.To = Vector2.new(0, 0)
+                        library.blacktracer.To = Vector2.new(0, 0)
                     end
 
                     -- Health Bar
-                    if ESPSettings.BoxESP and shouldShow then
-                        local d = (Vector2.new(HumPos.X - DistanceY, HumPos.Y - DistanceY*2) - Vector2.new(HumPos.X - DistanceY, HumPos.Y + DistanceY*2)).magnitude 
-                        local healthoffset = plr.Character.Humanoid.Health/plr.Character.Humanoid.MaxHealth * d
+                    local d = (Vector2.new(HumPos.X - DistanceY, HumPos.Y - DistanceY*2) - Vector2.new(HumPos.X - DistanceY, HumPos.Y + DistanceY*2)).magnitude 
+                    local healthoffset = plr.Character.Humanoid.Health/plr.Character.Humanoid.MaxHealth * d
 
-                        library.greenhealth.From = Vector2.new(HumPos.X - DistanceY - 4, HumPos.Y + DistanceY*2)
-                        library.greenhealth.To = Vector2.new(HumPos.X - DistanceY - 4, HumPos.Y + DistanceY*2 - healthoffset)
+                    library.greenhealth.From = Vector2.new(HumPos.X - DistanceY - 4, HumPos.Y + DistanceY*2)
+                    library.greenhealth.To = Vector2.new(HumPos.X - DistanceY - 4, HumPos.Y + DistanceY*2 - healthoffset)
 
-                        library.healthbar.From = Vector2.new(HumPos.X - DistanceY - 4, HumPos.Y + DistanceY*2)
-                        library.healthbar.To = Vector2.new(HumPos.X - DistanceY - 4, HumPos.Y - DistanceY*2)
+                    library.healthbar.From = Vector2.new(HumPos.X - DistanceY - 4, HumPos.Y + DistanceY*2)
+                    library.healthbar.To = Vector2.new(HumPos.X - DistanceY - 4, HumPos.Y - DistanceY*2)
 
-                        local green = Color3.fromRGB(0, 255, 0)
-                        local red = Color3.fromRGB(255, 0, 0)
+                    local green = Color3.fromRGB(0, 255, 0)
+                    local red = Color3.fromRGB(255, 0, 0)
 
-                        library.greenhealth.Color = red:lerp(green, plr.Character.Humanoid.Health/plr.Character.Humanoid.MaxHealth);
+                    library.greenhealth.Color = red:lerp(green, plr.Character.Humanoid.Health/plr.Character.Humanoid.MaxHealth);
 
-                        if Team_Check.UseTeamColor then
-                            Colorize(plr.TeamColor.Color)
-                        else
-                            library.tracer.Color = ESPSettings.Tracer_Color
-                            library.box.Color = ESPSettings.Box_Color
+                    if Team_Check.TeamCheck then
+                        if plr.TeamColor == player.TeamColor then
+                            Colorize(Team_Check.Green)
+                        else 
+                            Colorize(Team_Check.Red)
                         end
+                    else 
+                        library.tracer.Color = ESPSettings.Tracer_Color
+                        library.box.Color = ESPSettings.Box_Color
                     end
+                    if TeamColor then
+                        Colorize(plr.TeamColor.Color)
+                    end
+                    Visibility(ESPSettings.Tracers, {library.tracer, library.blacktracer})
+                    Visibility(ESPSettings.BoxESP, {library.box, library.black, library.healthbar, library.greenhealth})
                 else 
                     Visibility(false, library)
                 end
@@ -248,7 +247,13 @@ ESP_Values:AddToggle({
     Name = "Enable ESP",
     Value = false,
     Callback = function(New, Old)
-        ESPSettings.Enabled = New
+        ESPSettings.Tracers = New
+        ESPSettings.BoxESP = New
+        for _, v in pairs(game:GetService("Players"):GetPlayers()) do
+            if v ~= player then
+                ESP(v)
+            end
+        end
     end
 })
 
@@ -257,11 +262,7 @@ ESP_Values:AddToggle({
     Name = "Box ESP",
     Value = false,
     Callback = function(New, Old)
-        if ESPSettings.Enabled then
-            ESPSettings.BoxESP = New
-        else
-            ESPSettings.BoxESP = false
-        end
+        ESPSettings.BoxESP = New
     end
 })
 
@@ -270,11 +271,7 @@ ESP_Values:AddToggle({
     Name = "Tracer",
     Value = false,
     Callback = function(New, Old)
-        if ESPSettings.Enabled then
-            ESPSettings.Tracers = New
-        else
-            ESPSettings.Tracers = false
-        end
+        ESPSettings.Tracers = New
     end
 })
 
@@ -284,15 +281,6 @@ ESP_Values:AddToggle({
     Value = false,
     Callback = function(New, Old)
         Team_Check.TeamCheck = New
-    end
-})
-
--- Use Team Color
-ESP_Values:AddToggle({
-    Name = "Use Team Color",
-    Value = false,
-    Callback = function(New, Old)
-        Team_Check.UseTeamColor = New
     end
 })
 
@@ -324,11 +312,6 @@ ESP_Appearance:AddColorpicker({
     Value = ESPSettings.Box_Color,
     Callback = function(New, Old)
         ESPSettings.Box_Color = New
-        for _, v in pairs(Drawing.getInstances()) do
-            if v.Name == "box" then
-                v.Color = New
-            end
-        end
     end
 })
 
@@ -338,11 +321,6 @@ ESP_Appearance:AddColorpicker({
     Value = ESPSettings.Tracer_Color,
     Callback = function(New, Old)
         ESPSettings.Tracer_Color = New
-        for _, v in pairs(Drawing.getInstances()) do
-            if v.Name == "tracer" then
-                v.Color = New
-            end
-        end
     end
 })
 
@@ -403,5 +381,12 @@ FunctionsSection:AddButton({
     Callback = function()
         Functions:Exit()
         Library.Unload()
+    end
+})
+
+FunctionsSection:AddButton({
+    Name = "Copy Script Page",
+    Callback = function()
+        setclipboard("https://github.com/Exunys/Aimbot-V2")
     end
 })
