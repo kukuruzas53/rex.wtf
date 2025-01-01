@@ -70,11 +70,11 @@ local ESPSettingsSection = ESPTab:CreateSection({
 -- ESP Settings
 ESPSettings = {
     Enabled = false,
-    BoxESP = true,
-    Tracers = true,
-    Healthbar = true,
-    WallCheck = true,
-    TeamCheck = true,
+    BoxESP = false,
+    Tracers = false,
+    Healthbar = false,
+    WallCheck = false,
+    TeamCheck = false,
     UseTeamColors = false,
     Box_Color = Color3.fromRGB(255, 0, 0),
     Tracer_Color = Color3.fromRGB(255, 0, 0),
